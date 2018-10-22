@@ -1,0 +1,83 @@
+<html>
+<head>
+<title>TreePay - P2P Decentralized Payments Processor App</title>
+<link rel="shortcut icon" type="image/png" href="{{ url_for('static', filename='images/favicon.png') }}"/>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+<script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/qrcode.js') }}"></script>
+</head>
+<body>
+<style>
+	body {
+		background-color: #E6E6FA
+	}
+
+	li,h3,h5,p {
+		font-family: "Courier New", Courier, monospace
+	}
+	#transactions {
+	    	font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
+	    	border-collapse: collapse;
+	    	width: 100%;
+	}
+
+	#transactions td, #transactions th {
+	    	border: 1px solid #ddd;
+	    	padding: 8px;
+	}
+
+	#transactions tr:nth-child(even){background-color: #f2f2f2;}
+
+	#transactions tr:hover {background-color: #ddd;}
+
+	#transactions th {
+	    	padding-top: 12px;
+	    	padding-bottom: 12px;
+	    	text-align: left;
+	    	background-color: #4CAF50;
+	    	color: white;
+	}
+	input[type=text] {
+	    	width: 100%;
+	    	padding: 12px 20px;
+	    	margin: 8px 0;
+	    	display: inline-block;
+	    	border: 1px solid #ccc;
+	    	border-radius: 4px;
+	    	box-sizing: border-box;
+	}
+
+	input[type=submit] {
+	    	width: 100%;
+	    	background-color: #4CAF50;
+	    	color: white;
+	    	padding: 14px 20px;
+	    	margin: 8px 0;
+	    	border: none;
+	    	border-radius: 4px;
+	    	cursor: pointer;
+	}
+
+	input[type=submit]:hover {
+	    	background-color: #45a049;
+	}
+</style>
+{% include 'banner.html' %}
+<div align="center" style="width: 96%; margin-left: 2%; margin-right: 2%;">
+	{% if message == 'None' %}
+		<h4 align="justify">{{ sender }} has not sent you any message!</h4>
+	{% else %}
+		<h4 align="justify">{{ sender }} said: {{ message }}</h4>
+		<form method="post">
+			<label for="fname">Sender</label>
+			<input type="text" id="sender" required="required" value="{{ sender }}" name="sender" placeholder="Sender..">
+			<label for="lname">Transaction on success</label>
+			<input type="text" id="transaction_on_success" name="transaction_on_success" value="{{ transaction_on_success }}" required="required" placeholder="Transaction on success..">
+			<textarea name="message" id="message" required style="width: 100%;"rows="5"></textarea>
+			<input type="submit" value="Send">
+		</form>
+	{% endif %}
+</div>
+</body>
+</html>

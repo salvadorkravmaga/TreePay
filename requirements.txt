@@ -1,0 +1,7 @@
+python-bitcoinrpc
+ecdsa
+requests
+flask
+pycrypto
+base58
+ipaddress
