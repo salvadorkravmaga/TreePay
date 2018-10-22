@@ -1,4 +1,4 @@
-<div align="center"><img src="https://raw.githubusercontent.com/salvadorkravmaga/tree-project/master/logo.png" width="200" height="150"></div>
+<div align="center"><img src="https://github.com/salvadorkravmaga/TreePay/blob/master/logo.png?raw=true" width="200" height="150"></div>
 
 <h2 align="center">TreePay</h2>
 
