@@ -28,7 +28,8 @@ def decryptfromPubKey(message):
 					encrypted = message
 					raw_cipher_data = b64decode(encrypted)
 					decrypted = rsakey.decrypt(raw_cipher_data)
-					return decrypted
+					if len(decrypted) == 64:
+						return decrypted
 				except:
 					pass
 			return False
