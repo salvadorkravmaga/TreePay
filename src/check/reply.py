@@ -50,9 +50,11 @@ def create_payload(sender,payment_type,address_type,address,amount,additional2,p
 def send_reply(sender,payment_type,address_type,address,amount,additional2,product_hash,quantity):
 	try:
 		payload = create_payload(sender,payment_type,address_type,address,amount,additional2,product_hash,quantity)
-		if payload == False:
-			return
-		return_data = requests.post("http://127.0.0.1:10000/data/pool/new", data=payload)
+		if sender in payload:
+			return_data = requests.post("http://127.0.0.1:10000/data/pool/new", data=payload)
+			return True
+		else:
+			return payload
 	except:
 		pass
 	finally:
