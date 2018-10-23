@@ -8,4 +8,4 @@ Latest version: 1.0
 
 Coded by: Salvador Kravmaga
 
-Website: https://www.treeproject.net/treepay.html
+Learn more: https://www.treeproject.net/treepay.html
