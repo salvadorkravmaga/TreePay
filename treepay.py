@@ -469,15 +469,10 @@ def daemon():
 									if result == "True":
 										payload = user_search + "," + pubKey
 										requests.post("http://127.0.0.1:10000/users/new", data=payload)
-										EncryptionKey = os.urandom(32)
-										EncryptionKey = EncryptionKey.encode("hex")
-										result = encryption.get_encryption(user_search,EncryptionKey)
-										if result == True:
-											time_generated = int(time.time())
-											cur.execute('INSERT INTO users (identifier,EncryptionKey,time_generated,encryption) VALUES (?,?,?,?)', (user_search,EncryptionKey,time_generated,"OUTGOING"))
-											con.commit()
-											users_search.remove(user_search)
-											break
+										cur.execute('INSERT INTO users (identifier,EncryptionKey,time_generated,encryption) VALUES (?,?,?,?)', (user_search,"0","0","OUTGOING"))
+										con.commit()
+										users_search.remove(user_search)
+										break
 								else:
 									users_search.remove(user_search)
 							Last_users_check = time.time()
@@ -493,25 +488,29 @@ def daemon():
 				User = result["identifier"]
 				time_generated = result["time_generated"]
 				if time.time() - float(time_generated) > 600:
+					found = False
 					for connection in connections:
 						connection_details = connection.split(",")
 						peer = connection_details[1]
-						userDetails = user.get_user(User,peer)
+						userDetails = user.get(peer,User)
 						if userDetails != False:
-							check = online_status.check_payload(userDetails)
-							check_details = check.split(",")
+							CHECK = online_status.check_payload(userDetails)
+							check_details = CHECK.split(",")
 							result = check_details[0]
 							pubKey = check_details[1]
 							if result == "True":
-								payload = user + "," + pubKey
+								payload = User + "," + pubKey
 								requests.post("http://127.0.0.1:10000/users/new", data=payload)
-								EncryptionKey = os.urandom(32)
-								EncryptionKey = EncryptionKey.encode("hex")
-								result = encryption.get_encryption(user,EncryptionKey)
-								if result == True:
-									time_generated = int(time.time())
-									cur.execute('UPDATE users SET EncryptionKey=?,time_generated=? WHERE identifier=?', (EncryptionKey,time_generated,User))
-									con.commit()
+								found = True
+								break
+					if found == True:
+						EncryptionKey = os.urandom(32)
+						EncryptionKey = EncryptionKey.encode("hex")
+						result = encryption.get_encryption(User,EncryptionKey)
+						if result == True:
+							time_generated = int(time.time())
+							cur.execute('UPDATE users SET EncryptionKey=?,time_generated=? WHERE identifier=?', (EncryptionKey,time_generated,User))
+							con.commit()
 		except:
 			pass
 
