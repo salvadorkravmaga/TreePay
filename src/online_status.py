@@ -16,8 +16,13 @@ def check_payload(payload):
 			return sender + "," + False
 		if len(sender) < 36 or len(receiver) < 36 or len(sender) > 50 or len(receiver) > 50:
 			return sender + "," + False
-		timestamp = str(int(float(details[3])))
+		try:
+			timestamp = str(int(float(details[3])))
+		except:
+			return "False,False"
 		time_now = time.time()
+		if time_now - float(timestamp) > 420:
+			return "False,False"
 		additional1 = details[4]
 		additional2 = details[5]
 		data = details[7]
