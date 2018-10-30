@@ -8,6 +8,8 @@ def check_payload(payload):
 	if len(details) == 10:
 		operation = details[0]
 		sender = details[1]
+		if operation != "TREEPAY":
+			return sender + "," + False
 		receiver = details[2]
                 additional3 = details[6]
                 Address = address.keyToAddr(additional3,sender)
