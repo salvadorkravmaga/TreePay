@@ -1,7 +1,7 @@
-python-bitcoinrpc
-ecdsa
-requests
-flask
-pycrypto
-base58
-ipaddress
+python-bitcoinrpc==1.0
+ecdsa==0.13
+requests==2.18.4
+flask==1.0.2
+pycrypto==2.6.1
+base58==1.0.0
+ipaddress==1.0.17

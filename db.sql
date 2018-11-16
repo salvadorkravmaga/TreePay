@@ -37,6 +37,7 @@ NEW_TABLE
 CREATE TABLE IF NOT EXISTS users (
 	identifier text NOT NULL,
         EncryptionKey text NOT NULL,
+	NewEncryptionKey text NOT NULL,
 	time_generated text NOT NULL,
 	encryption text NOT NULL
 );

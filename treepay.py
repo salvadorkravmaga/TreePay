@@ -30,6 +30,7 @@ my_data = []
 my_transactions = []
 users = {}
 users_search = []
+last_ok = {}
 
 path = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 config = ConfigParser.RawConfigParser()
@@ -487,7 +488,8 @@ def daemon():
 			for result in results:
 				User = result["identifier"]
 				time_generated = result["time_generated"]
-				if time.time() - float(time_generated) > 600:
+				EncryptionKey = result["EncryptionKey"]
+				if time.time() - float(time_generated) > 650 or EncryptionKey == "0":
 					found = False
 					for connection in connections:
 						connection_details = connection.split(",")
@@ -498,9 +500,10 @@ def daemon():
 							check_details = CHECK.split(",")
 							result = check_details[0]
 							pubKey = check_details[1]
+							last_online = check_details[2]
 							if result == "True":
-								payload = User + "," + pubKey
-								requests.post("http://127.0.0.1:10000/users/new", data=payload)
+								payload = User + "," + pubKey + "," + last_online
+								requests.post("http://127.0.0.1:10001/users/new", data=payload)
 								found = True
 								break
 					if found == True:
@@ -509,7 +512,7 @@ def daemon():
 						result = encryption.get_encryption(User,EncryptionKey)
 						if result == True:
 							time_generated = int(time.time())
-							cur.execute('UPDATE users SET EncryptionKey=?,time_generated=? WHERE identifier=?', (EncryptionKey,time_generated,User))
+							cur.execute('UPDATE users SET EncryptionKey=?,NewEncryptionKey=?,time_generated=? WHERE identifier=?', ("1",EncryptionKey,time_generated,User))
 							con.commit()
 		except:
 			pass
@@ -658,9 +661,22 @@ def daemon():
 						peers_to_post.append(peer)
 				for data_to_post in my_data:
 					if len(PostTo) > 0:
-						for peer in peers_to_post:
-							new_data.new_data(peer,data_to_post)
-						my_data.remove(data_to_post)
+						data_to_post_details = data_to_post.split(",")
+						receiver = data_to_post_details[2]
+						if receiver in accounts:
+							for peer in peers_to_post:
+								new_data.new_data(peer,data_to_post)
+							my_data.remove(data_to_post)
+						else:
+							return_data = requests.get("http://127.0.0.1:10000/sent/"+receiver)
+							try:
+								times = return_data.content
+								if int(times) - 1 <= 10:
+									for peer in peers_to_post:
+										new_data.new_data(peer,data_to_post)
+									my_data.remove(data_to_post)
+							except:
+								pass
 		except:
 			pass
 
@@ -694,6 +710,38 @@ def daemon():
 			con.close()
 		except:
 			pass
+
+@app.route('/sent/<receiver>', methods=['GET'])
+def sent(receiver):
+	if request.remote_addr == "127.0.0.1" or request.remote_addr == "::ffff:127.0.0.1":
+		found = False
+		for USER in last_ok:
+			if USER == receiver:
+				found = True
+				break
+		if found == True:
+			last_ok[receiver] = last_ok[receiver] + 1
+		else:
+			last_ok.update({receiver:1})
+		return str(last_ok[receiver])
+	else:
+		abort(403)
+
+@app.route('/received/<sender>/OK', methods=['GET'])
+def received_OK(sender):
+	if request.remote_addr == "127.0.0.1" or request.remote_addr == "::ffff:127.0.0.1":
+		found = False
+		for USER in last_ok:
+			if USER == sender:
+				found = True
+				break
+		if found == True:
+			last_ok[sender] = 0
+		else:
+			last_ok.update({sender:0})
+		return "Done"
+	else:
+		abort(403)
  
 @app.route("/")
 def redirect_to_index():

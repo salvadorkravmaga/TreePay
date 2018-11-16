@@ -1,6 +1,6 @@
 from src.cryptography import encrypt, decrypt, address, messages
 from src.payments import getbtcaddress, getltcaddress, price
-from src.check import operations, reply, OK
+from src.check import operations, reply, OK, encrypt_reply
 from hashlib import sha256
 import time
 import sqlite3 as sql
@@ -148,10 +148,11 @@ def tree_pay(sender,receiver,timestamp,additional1,additional2,additional3,data,
 				if test_result != "test":
 					return
 				time_created = str(int(time.time()))
-				cur.execute('INSERT INTO users (identifier,EncryptionKey,time_generated,encryption) VALUES (?,?,?,?)', (sender,EncryptionKey,time_created,"INCOMING"))
+				cur.execute('INSERT INTO users (identifier,EncryptionKey,NewEncryptionKey,time_generated,encryption) VALUES (?,?,?,?,?)', (sender,EncryptionKey,EncryptionKey,time_created,"INCOMING"))
 				con.commit()
-				OK.send_OK(sender)
-				return True
+				result = encryption_reply.send_reply(sender,EncryptionKey)
+				if result == True:
+					return True
 			elif len(result) == 1:
 				time_generated = result[0]["time_generated"]
 				encryption_type = result[0]["encryption"]
@@ -164,21 +165,42 @@ def tree_pay(sender,receiver,timestamp,additional1,additional2,additional3,data,
 							testEncryptionKey = EncryptionKey.decode("hex")
 						except:
 							return
-						result = encrypt.encryptWithRSAKey(EncryptionKey,"test")
-						if result == False:
+						Result = encrypt.encryptWithRSAKey(EncryptionKey,"test")
+						if Result == False:
 							return
-						test_result = decrypt.decryptWithRSAKey(EncryptionKey,result)
+						test_result = decrypt.decryptWithRSAKey(EncryptionKey,Result)
 						if test_result == False:
 							return
 						if test_result != "test":
 							return
+						oldEncryptionKey = result[0]["EncryptionKey"]
 						time_created = str(int(time.time()))
-						cur.execute('UPDATE users SET EncryptionKey=?,time_generated=? WHERE identifier=?', (EncryptionKey,time_created,sender))
+						cur.execute('UPDATE users SET EncryptionKey=?,NewEncryptionKey=?,time_generated=? WHERE identifier=?', (EncryptionKey,oldEncryptionKey,time_created,sender))
 						con.commit()
-						OK.send_OK(sender)
-						return True
+						result = encryption_reply.send_reply(sender,EncryptionKey)
+						if result == True:
+							return True
 			else:
 				return
+		elif additional1 == "ENCRYPT-REPLY":
+			if additional2 != "None":
+				return
+			cur.execute('SELECT * FROM users WHERE identifier=?', (sender,))
+			result = cur.fetchall()
+			if len(result) == 1:
+				EncryptionKey = result[0]["NewEncryptionKey"]
+				encryption = result[0]["encryption"]
+			else:
+				return
+			if encryption != "OUTGOING":
+				return
+			data = decrypt.decryptWithRSAKey(EncryptionKey,data)
+			if data == False:
+				return
+			if data == EncryptionKey:
+				cur.execute('UPDATE users SET EncryptionKey=? WHERE identifier=?', (data,sender))
+				con.commit()
+				OK.send_OK(sender)
 		elif additional1 == "MESSAGE":
 			if len(additional2) != 64:
 				return
