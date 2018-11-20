@@ -216,6 +216,9 @@ def tree_pay(sender,receiver,timestamp,additional1,additional2,additional3,data,
 				return True
 			else:
 				return
+		elif additional1 == "OK":
+			requests.get("http://127.0.0.1:10000/received/"+sender+"/OK")
+			return True
 		else:
 			return
 	except:

@@ -467,15 +467,14 @@ def daemon():
 									check_details = CHECK.split(",")
 									result = check_details[0]
 									pubKey = check_details[1]
+									last_online = check_details[2]
 									if result == "True":
-										payload = user_search + "," + pubKey
+										payload = user_search + "," + pubKey + "," + last_online
 										requests.post("http://127.0.0.1:10000/users/new", data=payload)
-										cur.execute('INSERT INTO users (identifier,EncryptionKey,time_generated,encryption) VALUES (?,?,?,?)', (user_search,"0","0","OUTGOING"))
+										cur.execute('INSERT INTO users (identifier,EncryptionKey,NewEncryptionKey,time_generated,encryption) VALUES (?,?,?,?,?)', (user_search,"0","0","0","OUTGOING"))
 										con.commit()
 										users_search.remove(user_search)
 										break
-								else:
-									users_search.remove(user_search)
 							Last_users_check = time.time()
 						else:
 							users_search.remove(user_search)
@@ -503,7 +502,7 @@ def daemon():
 							last_online = check_details[2]
 							if result == "True":
 								payload = User + "," + pubKey + "," + last_online
-								requests.post("http://127.0.0.1:10001/users/new", data=payload)
+								requests.post("http://127.0.0.1:10000/users/new", data=payload)
 								found = True
 								break
 					if found == True:
